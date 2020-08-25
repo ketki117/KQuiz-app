@@ -35,7 +35,9 @@ public class Start_test extends AppCompatActivity {
             "8.  Which of the following package stores all the standard java classes?",
             "9.  Which of these method of class String is used to compare two String objects for their equality?",
             "10.  A train, 600 meters long, crosses a bridge, 2400 meters long ,in 3 minutes. Find the speed of train in kmph"};
+
     String answers[] ={"23","22 years","'600","3:1","public","400","None of the mentioned","java","equals()","60kmph"};
+
     String options[] ={"21","27","29","23",
             "24 years","20 years","18 years","22 years",
             "'124.70","'600","'742.70","'700",

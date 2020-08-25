@@ -27,7 +27,8 @@
         <activity android:name=".Enter_test"
                   android:noHistory="true"/>
 
-        <activity android:name=".Result" />
+        <activity android:name=".Result"
+               android:noHistory="true"/>
         <activity
             android:name=".Start_test"
             android:noHistory="true" />

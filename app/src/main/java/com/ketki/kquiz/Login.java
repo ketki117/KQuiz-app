@@ -22,7 +22,6 @@ public class Login extends AppCompatActivity {
     EditText gmail, password;
     Button signinbtn;
     FirebaseAuth mfireBaseAuth;
-    private FirebaseAuth.AuthStateListener mAuthStatetListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,21 +33,7 @@ public class Login extends AppCompatActivity {
         password = (EditText) findViewById(R.id.Password);
         signinbtn = (Button) findViewById(R.id.button3);
 
-        mAuthStatetListener = new FirebaseAuth.AuthStateListener() {
-
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if (mfireBaseAuth != null)
-                {
-                    Toast.makeText(Login.this, "You are Logged in", Toast.LENGTH_SHORT).show();
-                    Intent i = new Intent(Login.this, Enter_test.class);
-                    startActivity(i);
-                }
-                else
-                    Toast.makeText(Login.this, "Please SIGN UP first", Toast.LENGTH_SHORT).show();
-            }
-        };
-
+        //logic for signing in
         signinbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,48 +41,32 @@ public class Login extends AppCompatActivity {
                 String mailaddress = gmail.getText().toString();
                 String pwd = password.getText().toString();
 
-                if (mailaddress.isEmpty() && pwd.isEmpty())
-                {
+                if (mailaddress.isEmpty() && pwd.isEmpty()) {
                     Toast.makeText(Login.this, "Fiels are empty!", Toast.LENGTH_SHORT).show();
-                }
-                else if (mailaddress.isEmpty())
-                {
+                } else if (mailaddress.isEmpty()) {
                     gmail.setError("Please enter your email id!");
                     gmail.requestFocus();
-                }
-                else if (pwd.isEmpty())
-                {
+                } else if (pwd.isEmpty()) {
                     password.setError("Please enter your password!");
                     password.requestFocus();
-                }
-                else if(!(mailaddress.isEmpty() && pwd.isEmpty() ))
-                {
+                } else if (!(mailaddress.isEmpty() && pwd.isEmpty())) {
                     mfireBaseAuth.signInWithEmailAndPassword(mailaddress, pwd).addOnCompleteListener(Login.this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
-
-                            if (task.isSuccessful()) {
+                            if(!mfireBaseAuth.getCurrentUser().isEmailVerified())
+                                Toast.makeText(Login.this, "You might not have verified your email or signed up yet", Toast.LENGTH_SHORT).show();
+                            else if (task.isSuccessful()) {
                                 Intent i = new Intent(Login.this, Enter_test.class);
                                 startActivity(i);
-                            }
-                            else
-                            {
-                                Toast.makeText(Login.this, "Error occured, please try again.", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(Login.this, "Entered email id or password is wrong!", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
-                }
-                else
+                } else
                     Toast.makeText(Login.this, "Entered email id or password is wrong!", Toast.LENGTH_SHORT).show();
             }
         });
 
     }
-
-        @Override
-        protected void onStart()
-        {
-         super.onStart();
-         mfireBaseAuth.addAuthStateListener(mAuthStatetListener);
-        }
 }

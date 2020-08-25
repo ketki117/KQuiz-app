@@ -17,29 +17,25 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
-
-    public static final String username="name",m_id="mail_id",pass="PassWord";
+public class MainActivity extends AppCompatActivity
+{
     EditText Name,gmail,password;
     Button signupbtn;
     TextView tvsignup;
     FirebaseAuth mfireBaseAuth;
-
-    private static DocumentReference mdocref=FirebaseFirestore.getInstance().document("user/details");
-
+    String id;
+    FirebaseDatabase rootNode;
+    DatabaseReference mdatabaseref;
+    int count=0;
     static int flag=0;
-
-
-    public static DocumentReference getMdocref()
-    {
-        return mdocref;
-    }
 
     @Override
     public void onBackPressed() {
@@ -54,23 +50,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        mfireBaseAuth= FirebaseAuth.getInstance();
+       if(mfireBaseAuth.getCurrentUser()!=null && mfireBaseAuth.getCurrentUser().isEmailVerified())
+        {
+            startActivity(new Intent(MainActivity.this,Enter_test.class));
+        }
+
         setContentView(R.layout.activity_main);
 
-        mfireBaseAuth= FirebaseAuth.getInstance();
-        Name=(EditText)findViewById(R.id.PersonName);
-        gmail=(EditText)findViewById(R.id.EmailAddress);
-        password=(EditText)findViewById(R.id.Password);
-        signupbtn=(Button)findViewById(R.id.button3);
-        tvsignup=(TextView)findViewById(R.id.textView);
+      //  mfireBaseAuth= FirebaseAuth.getInstance();
+        Name=(EditText)findViewById(R.id.PersonName);  //textview for name
+        gmail=(EditText)findViewById(R.id.EmailAddress); //textview for gmail
+        password=(EditText)findViewById(R.id.Password);  //textview for password
+        signupbtn=(Button)findViewById(R.id.button3);   // sign up button
+        tvsignup=(TextView)findViewById(R.id.textView); // textview for sign in
 
+        //after signup button is clicked, check whether entered information is correct and authenticate the user corresponding the that info
         signupbtn.setOnClickListener(new View.OnClickListener() {
             private static final String TAG = "";
 
             @Override
             public void onClick(View v) {
-                String mailaddress= gmail.getText().toString();
-                String pwd=password.getText().toString();
-                String name=Name.getText().toString();
+                final String mailaddress= gmail.getText().toString();
+                final String pwd=password.getText().toString();
+                final String name=Name.getText().toString();
 
                 if(mailaddress.isEmpty() &&  pwd.isEmpty() && name.isEmpty() )
                 {
@@ -99,45 +102,37 @@ public class MainActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(!task.isSuccessful())
                             Toast.makeText(MainActivity.this,"Entered credentials are wrong or you might have already signed up.",Toast.LENGTH_SHORT).show();
-                            else
-                            {
-                                String username=Name.getText().toString();
-                                Map<String,Object> datatosave=new HashMap<>();
-                                datatosave.put("name",username);
-                                mdocref.set(datatosave).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
+                            else {
+                                mfireBaseAuth.getCurrentUser().sendEmailVerification();
 
+                                UserCredentials user = new UserCredentials(name, mailaddress, pwd);
+
+                                rootNode = FirebaseDatabase.getInstance();
+                                mdatabaseref = rootNode.getReference("users");
+
+                                id = mfireBaseAuth.getCurrentUser().getUid();
+                                mdatabaseref.child(id).setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful())
+                                            Log.d(TAG, "Document was saved");
+                                        else
+                                            Log.w(TAG, "Document was not saved!");
                                     }
                                 });
 
-                                Toast.makeText(MainActivity.this,"Sign up successful",Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(MainActivity.this,Enter_test.class));
+                                Toast.makeText(MainActivity.this, "Sign up successful, Please verify your email", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(MainActivity.this, Login.class));
                             }
                         }
                     });
-
-                    Map<String,Object> datatosave=new HashMap<String,Object>();
-                    datatosave.put(username,name);
-                    datatosave.put(m_id,mailaddress);
-                    datatosave.put(pass,pwd);
-
-                    mdocref.set(datatosave).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if(task.isSuccessful())
-                                Log.d(TAG,"Document was saved");
-                            else
-                                Log.w(TAG,"Document was not saved!");
-                        }
-                    });
-
                 }
                 else
                     Toast.makeText(MainActivity.this, "Entered email id or password is wrong!", Toast.LENGTH_SHORT).show();
             }
         });
 
+        //if user has already signed up, enter the login activity
         tvsignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

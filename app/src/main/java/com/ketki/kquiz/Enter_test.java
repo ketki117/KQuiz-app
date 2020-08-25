@@ -1,6 +1,5 @@
 package com.ketki.kquiz;
 
-
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,6 +27,7 @@ public class Enter_test extends AppCompatActivity {
         Button startbutton = (Button) findViewById(R.id.btn1);
         Button instnbutton= (Button)findViewById(R.id.btn3);
 
+        //clicking on start button starts Start_test activity
         startbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -36,6 +36,7 @@ public class Enter_test extends AppCompatActivity {
             }
         });
 
+        //clicking on instruction button starts instruction activity
         instnbutton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {

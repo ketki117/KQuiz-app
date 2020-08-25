@@ -1,5 +1,6 @@
 package com.ketki.kquiz;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -16,22 +17,31 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class Result extends AppCompatActivity {
 
-    private FirebaseAuth mfirebaseauth;
-    DocumentReference mdocref=MainActivity.getMdocref();
+     FirebaseAuth mfirebaseauth=FirebaseAuth.getInstance();
+    DatabaseReference mdatabaseref;
+    FirebaseDatabase rootNode;
     TextView t;
 
     static int flag=0;
+    //set the value for all txt views
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
-        mfirebaseauth=FirebaseAuth.getInstance();
         t=(TextView)findViewById(R.id.textView7);
         fetchname(t);
 
@@ -83,20 +93,28 @@ public class Result extends AppCompatActivity {
         });
     }
 
+    //fetch usename from database
     public void fetchname(View view)
     {
-     mdocref.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-         @Override
-         public void onSuccess(DocumentSnapshot documentSnapshot) {
-             if(documentSnapshot.exists())
-            {
-                String name=documentSnapshot.getString(MainActivity.username);
-                t.setText(name);
+
+        rootNode=FirebaseDatabase.getInstance();
+        mdatabaseref=rootNode.getReference("users").child(mfirebaseauth.getCurrentUser().getUid());
+
+        mdatabaseref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                t.setText(dataSnapshot.child("name").getValue().toString());
             }
-         }
-     });
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
+    //logic for logging out
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -113,13 +131,11 @@ public class Result extends AppCompatActivity {
          case R.id.logoutbutton:
          {
            FirebaseAuth.getInstance().signOut();
-           finish();
-           Intent in= new Intent(Result.this,Login.class);
+           mfirebaseauth=null;
+           Intent in= new Intent(Result.this, MainActivity.class);
            startActivity(in);
          }
-         break;
      }
-     return super.onOptionsItemSelected(item);
+     return true;
     }
-
 }

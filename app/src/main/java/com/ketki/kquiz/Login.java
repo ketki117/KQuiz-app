@@ -53,9 +53,11 @@ public class Login extends AppCompatActivity {
                     mfireBaseAuth.signInWithEmailAndPassword(mailaddress, pwd).addOnCompleteListener(Login.this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
-                            if(!mfireBaseAuth.getCurrentUser().isEmailVerified())
-                                Toast.makeText(Login.this, "You might not have verified your email or signed up yet", Toast.LENGTH_SHORT).show();
-                            else if (task.isSuccessful()) {
+                            if (task.isSuccessful())
+                            {
+                                if(mfireBaseAuth.getCurrentUser()!=null && !mfireBaseAuth.getCurrentUser().isEmailVerified())
+                                    Toast.makeText(Login.this, "You might not have verified your email or signed up yet", Toast.LENGTH_SHORT).show();
+
                                 Intent i = new Intent(Login.this, Enter_test.class);
                                 startActivity(i);
                             } else {
